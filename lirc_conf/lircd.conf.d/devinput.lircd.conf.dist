@@ -1,0 +1,47 @@
+
+# Please take the time to finish this file as described in
+# https://sourceforge.net/p/lirc-remotes/wiki/Checklist/
+# and make it available to others by sending it to
+# <lirc@bartelmus.de>
+#
+# This config file was automatically generated
+# using lirc-0.10.1(devinput) on Sat Jul 18 20:12:45 2020
+# Command line used: -d /dev/lirc0 /home/pi/out.conf
+# Kernel version (uname -r): 4.19.75-v7l+
+#
+# Remote name (as of config file): rc
+# Brand of remote device, the thing you hold in your hand:
+# Remote device model nr:
+# Remote device info url:
+# Does remote device has a bundled capture device e. g., a
+#     usb dongle? :
+# For bundled USB devices: usb vendor id, product id
+#     and device string (use dmesg or lsusb):
+# Type of device controlled
+#     (TV, VCR, Audio, DVD, Satellite, Cable, HTPC, ...) :
+# Device(s) controlled by this remote:
+
+begin remote
+
+  name  rc
+  driver devinput
+  bits           64
+  eps            30
+  aeps          100
+
+  one             0     0
+  zero            0     0
+  gap          99907
+  toggle_bit_mask 0x0
+  frequency    38000
+
+      begin codes
+          KEY_UP                   0x236401000000119D
+          KEY_DOWN                 0x01FB010000000338
+          KEY_LEFT                 0x233F0100000011EE
+          KEY_RIGHT                0x22D3010000001231
+      end codes
+
+end remote
+
+

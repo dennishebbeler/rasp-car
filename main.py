@@ -4,6 +4,10 @@ import time
 import asyncio
 from MotorShield import PiMotor
 from lirc import LircdConnection
+import numpy as np
+
+from DistanceSensor import DistanceSensor
+from CarPosition import CarPosition
 
 trig = 3
 echo = 4
@@ -43,65 +47,6 @@ gpio.setup(echo2, gpio.IN)
 bootTime = time.time()
 
 print(bootTime)
-
-async def distanceSensor():
-    gpio.setmode(gpio.BOARD)
-    gpio.setup(trig, gpio.OUT)
-    gpio.setup(echo, gpio.IN)
-    gpio.setup(trig2, gpio.OUT)
-    gpio.setup(echo2, gpio.IN)
-    print("=============")
-    gpio.output(trig, False)
-
-    time.sleep(5)
-    gpio.output(trig, True)
-    time.sleep(0.0001)
-    gpio.output(trig, False)
-
-    startSensor = time.time()
-
-    while gpio.input(echo) == 0:
-        startSensor = time.time()
-
-    while gpio.input(echo) == 1:
-        stopSensor = time.time()
-
-    vergangeneZeit = stopSensor - startSensor
-    entfernung = round(vergangeneZeit * 34000 / 2, 2)
-    distance1 = entfernung
-    print(distance1)
-    print("=============")
-    return distance1
-
-
-async def distanceSensor2():
-    gpio.setmode(gpio.BOARD)
-    gpio.setup(trig, gpio.OUT)
-    gpio.setup(echo, gpio.IN)
-    gpio.setup(trig2, gpio.OUT)
-    gpio.setup(echo2, gpio.IN)
-    print("=============")
-    gpio.output(trig2, False)
-
-    time.sleep(5)
-    gpio.output(trig2, True)
-    time.sleep(0.0001)
-    gpio.output(trig2, False)
-
-    startSensor = time.time()
-
-    while gpio.input(echo2) == 0:
-        startSensor = time.time()
-
-    while gpio.input(echo2) == 1:
-        stopSensor = time.time()
-
-    vergangeneZeit = stopSensor - startSensor
-    entfernung = round(vergangeneZeit * 34000 / 2, 2)
-    distance2 = entfernung
-    print(distance2)
-    return distance2
-
 
 def increaseSpeed(speed, increase):
     if speed + increase < 100:
@@ -180,26 +125,34 @@ async def ir():
 async def main():
 
     endCondition = True
+    #carPos = CarPosition(0,0,0)
+    #obstacles = [] # the map, build from points
+    sensorFront = DistanceSensor(trig, echo, 3)
+    sensorLeft = DistanceSensor(trig2, echo2, 3)
     while endCondition:
-        first_awaitable = asyncio.create_task(distanceSensor())
-        second_awaitable = asyncio.create_task(distanceSensor2())
+        first_awaitable = asyncio.create_task(sensorFront.getDistance())
+        second_awaitable = asyncio.create_task(sensorLeft.getDistance())
 
         await ir()
 
-        distance1 = await first_awaitable
-        distance2 = await second_awaitable
+        distanceFront = await first_awaitable
+        distanceLeft = await second_awaitable
 
         print("=============")
         print("Messung")
-        print(distance1)
-        print(distance2)
+        print("Front: ", distanceFront)
+        print("Left: ", distanceLeft)
         print("=============")
 
-        if distance1 < 2 or distance2 < 2:
+        if distanceFront < 2 or distanceLeft < 2:
             front = 0
             left = 0
             right = 0
             changeMotors(front, left, right)
+            #obstacles.append(np.array(car position + distance of reading))
+            # TODO implement change of car position with velocity over time
+            #carPos = (carPos.x + , carPos.y + , carPos.theta + )
+            
 
     gpio.cleanup()
 

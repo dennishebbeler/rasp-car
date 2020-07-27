@@ -8,6 +8,7 @@ import numpy as np
 
 from DistanceSensor import DistanceSensor
 from CarPosition import CarPosition
+from mapVisualization import SlamPlot
 
 trig = 3
 echo = 4
@@ -125,11 +126,15 @@ async def ir():
 async def main():
 
     endCondition = True
-    #carPos = CarPosition(0,0,0)
-    #obstacles = [] # the map, build from points
+    carPos = CarPosition(0,0,0)
+    obstacles = [] # the map, build from points
+    lastStop = 0 # seconds since last time the direction was changed
     sensorFront = DistanceSensor(trig, echo, 3)
     sensorLeft = DistanceSensor(trig2, echo2, 3)
+    # visual = SlamPlot()
+
     while endCondition:
+        lastStop = time.time() # seconds since last time the direction was changed
         first_awaitable = asyncio.create_task(sensorFront.getDistance())
         second_awaitable = asyncio.create_task(sensorLeft.getDistance())
 
@@ -144,16 +149,24 @@ async def main():
         print("Left: ", distanceLeft)
         print("=============")
 
-        if distanceFront < 2 or distanceLeft < 2:
+        if distanceFront < 5: # wall in front of car
             front = 0
             left = 0
+            right = 1 # ?
+            changeMotors(front, left, right) # stop and turn 90 degree right
+            v = (0,0,0) # TODO the velocity
+            carPos.updatePostition(lastStop, v)
+            obstacles.append(carPos.getWallPoint())
+        elif distanceLeft < 5: #no wall left of car
+            front = 0
+            left = 1
             right = 0
-            changeMotors(front, left, right)
-            #obstacles.append(np.array(car position + distance of reading))
-            # TODO implement change of car position with velocity over time
-            #carPos = (carPos.x + , carPos.y + , carPos.theta + )
-            
+            changeMotors(front, left, right) # stop and turn 90 degree left
+            v = (0,0,0) # TODO the velocity
+            carPos.updatePostition(lastStop, v)
+            obstacles.append(carPos.getWallPoint())
 
+    # visual.update_plot(obstacles)
     gpio.cleanup()
 
 

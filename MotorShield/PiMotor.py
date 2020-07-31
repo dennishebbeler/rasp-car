@@ -7,6 +7,7 @@
 import RPi.GPIO as GPIO                        #Import GPIO library
 import time
 from time import sleep
+
 GPIO.setmode(GPIO.BOARD)                       #Set GPIO pin numbering
 
 GPIO.setwarnings(False)
@@ -83,8 +84,8 @@ class Motor:
         ''' Stops power to the motor,
      '''
         print("Stop")
-        self.arrow.off()
         self.PWM.ChangeDutyCycle(0)
+        print(self.pins['f'])
         GPIO.output(self.pins['f'],GPIO.LOW)
         GPIO.output(self.pins['r'],GPIO.LOW)
 
@@ -299,3 +300,4 @@ class Arrow():
 
     def off(self):
         GPIO.output(self.pin,GPIO.LOW)
+

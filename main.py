@@ -10,6 +10,8 @@ from DistanceSensor import DistanceSensor
 from CarPosition import CarPosition
 from mapVisualization import SlamPlot
 
+gpio.setmode(gpio.BOARD)
+
 trig = 3
 echo = 4
 trigBoard = 5
@@ -36,19 +38,14 @@ mFL = PiMotor.Motor("MOTOR1", 1)  # Vorne Links
 mRR = PiMotor.Motor("MOTOR2", 1)  # Hinten Links
 mRL = PiMotor.Motor("MOTOR4", 1)  # Hinten Rechts
 
-ab = PiMotor.Arrow(1)
-al = PiMotor.Arrow(2)
-af = PiMotor.Arrow(3)
-ar = PiMotor.Arrow(4)
+#gpio.setup(trig, gpio.OUT)
+#gpio.setup(echo, gpio.IN)
+#gpio.setup(trig2, gpio.OUT)
+#gpio.setup(echo2, gpio.IN)
 
-gpio.setup(trig, gpio.OUT)
-gpio.setup(echo, gpio.IN)
-gpio.setup(trig2, gpio.OUT)
-gpio.setup(echo2, gpio.IN)
 bootTime = time.time()
 
 print(bootTime)
-
 
 def increaseSpeed(speed, increase):
     if speed + increase < 100:
@@ -194,7 +191,8 @@ async def carmain():
     lastStop = 0  # seconds since last time the direction was changed
     sensorFront = DistanceSensor(trig, echo, 3)
     sensorLeft = DistanceSensor(trig2, echo2, 3)
-    # visual = SlamPlot()
+        
+   # visual = SlamPlot()
     with open("mapPoints.txt", "w") as f:
         while endCondition:
             lastStop = time.time()  # seconds since last time the direction was changed
@@ -204,10 +202,8 @@ async def carmain():
                 second_awaitable = asyncio.create_task(sensorLeft.getDistance())
 
             if distanceEnable:
-                distanceFront = await
-                first_awaitable
-                distanceLeft = await
-                second_awaitable
+                distanceFront = await first_awaitable
+                distanceLeft = await second_awaitable
 
             print("=============")
             print("Messung")
@@ -215,31 +211,30 @@ async def carmain():
             print("Left: ", distanceLeft)
             print("=============")
 
-            f.write(obstacles[-1] + "\n")
-        if distanceFront < stopDistanceFront:  # wall in front of car
-            sideStepRight(1)
+            if distanceFront < stopDistanceFront:  # wall in front of car
+                sideStepRight(1)
 
-            v = (0, 0, 0)  # TODO the velocity
-            carPos.updatePostition(lastStop)
-            obstacles.append(carPos.getWallPoint())
-            f.write(obstacles[-1] + "\n")
+                v = (0, 0, 0)  # TODO the velocity
+                carPos.updatePostition(lastStop)
+                obstacles.append(carPos.getWallPoint())
+                f.write(str(obstacles[-1]) + "\n")
 
-        elif distanceLeft < stopDistanceLeft:  # no wall left of car
-            print("Stop Left")
+            elif distanceLeft < stopDistanceLeft:  # no wall left of car
+                print("Stop Left")
 
-            sideStepRight(1)
+                sideStepRight(1)
 
-            v = (0, 0, 0)  # TODO the velocity
-            carPos.updatePostition(lastStop)
-            obstacles.append(carPos.getWallPoint())
-            f.write(obstacles[-1] + "\n")
+                v = (0, 0, 0)  # TODO the velocity
+                carPos.updatePostition(lastStop)
+                obstacles.append(carPos.getWallPoint())
+                f.write(str(obstacles[-1]) + "\n")
 
-        if distanceLeft > stopDistanceLeft and distanceFront > stopDistanceFront:
-            turnStraight()
+            if distanceLeft > stopDistanceLeft and distanceFront > stopDistanceFront:
+                print("Start")
+                turnStraight()
 
 
 # visual.update_plot(obstacles)
-gpio.cleanup()
 
 
 if __name__ == '__main__':

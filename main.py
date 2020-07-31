@@ -133,41 +133,41 @@ async def main():
     sensorLeft = DistanceSensor(trig2, echo2, 3)
     # visual = SlamPlot()
 
-    while endCondition:
-        lastStop = time.time() # seconds since last time the direction was changed
-        first_awaitable = asyncio.create_task(sensorFront.getDistance())
-        second_awaitable = asyncio.create_task(sensorLeft.getDistance())
+    with open("mapPoints.txt", "w") as f:
+        while endCondition:
+            lastStop = time.time() # seconds since last time the direction was changed
+            first_awaitable = asyncio.create_task(sensorFront.getDistance())
+            second_awaitable = asyncio.create_task(sensorLeft.getDistance())
 
-        await ir()
+            await ir()
 
-        distanceFront = await first_awaitable
-        distanceLeft = await second_awaitable
+            distanceFront = await first_awaitable
+            distanceLeft = await second_awaitable
 
-        print("=============")
-        print("Messung")
-        print("Front: ", distanceFront)
-        print("Left: ", distanceLeft)
-        print("=============")
+            print("=============")
+            print("Messung")
+            print("Front: ", distanceFront)
+            print("Left: ", distanceLeft)
+            print("=============")
 
-        if distanceFront < 5: # wall in front of car
-            front = 0
-            left = 0
-            right = 1 # ?
-            changeMotors(front, left, right) # stop and turn 90 degree right
-            carPos.updatePostition(lastStop)
-            obstacles.append(carPos.getWallPoint())
-        elif distanceLeft < 5: #no wall left of car
-            front = 0
-            left = 1
-            right = 0
-            changeMotors(front, left, right) # stop and turn 90 degree left
-            carPos.updatePostition(lastStop)
-            obstacles.append(carPos.getWallPoint())
+            if distanceFront < 5: # wall in front of car
+                front = 0
+                left = 0
+                right = 1 # ?
+                changeMotors(front, left, right) # stop and turn 90 degree right
+                carPos.updatePostition(lastStop)
+                obstacles.append(carPos.getWallPoint())
+                f.write(p + "\n")
+            elif distanceLeft < 5: #no wall left of car
+                front = 0
+                left = 1
+                right = 0
+                changeMotors(front, left, right) # stop and turn 90 degree left
+                carPos.updatePostition(lastStop)
+                obstacles.append(carPos.getWallPoint())
+                f.write(p + "\n")
 
     gpio.cleanup()
-    with open("mapPoints.txt", "w") as f:
-        for p in obstacles:
-            f.write(p + "\n")
     # visual.update_plot(obstacles)
 
 

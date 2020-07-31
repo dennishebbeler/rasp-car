@@ -4,7 +4,6 @@ import time
 import asyncio
 from MotorShield import PiMotor
 from lirc import LircdConnection
-import numpy as np
 
 from DistanceSensor import DistanceSensor
 from CarPosition import CarPosition

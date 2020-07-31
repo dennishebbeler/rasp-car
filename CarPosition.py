@@ -25,7 +25,7 @@ class CarPosition:
 
     def updatePostition(self, timeDriven):
         # velocity of the car * the time driven
-        speed = 10
+        speed = 10 # cm/s
         v = self.getVelocity(timeDriven, speed)
         r_x = v[0] * timeDriven
         r_y = v[1] * timeDriven

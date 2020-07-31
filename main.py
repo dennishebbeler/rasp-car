@@ -157,7 +157,7 @@ async def main():
                 changeMotors(front, left, right) # stop and turn 90 degree right
                 carPos.updatePostition(lastStop)
                 obstacles.append(carPos.getWallPoint())
-                f.write(p + "\n")
+                f.write(obstacles[-1] + "\n")
             elif distanceLeft < 5: #no wall left of car
                 front = 0
                 left = 1
@@ -165,7 +165,7 @@ async def main():
                 changeMotors(front, left, right) # stop and turn 90 degree left
                 carPos.updatePostition(lastStop)
                 obstacles.append(carPos.getWallPoint())
-                f.write(p + "\n")
+                f.write(obstacles[-1] + "\n")
 
     gpio.cleanup()
     # visual.update_plot(obstacles)

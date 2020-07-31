@@ -48,8 +48,8 @@ class SlamPlot:
         plt.pause(0.001)  # whyever nessecary to update the plot
 
         # remove lines and patches, so they dont show up next step
-        for p in self.ax.patches:
-            p.remove()
-        for index in range(len(self.ax.lines)):
-            del(self.ax.lines[-1])
+        #for p in self.ax.patches:
+        #    p.remove()
+        #for index in range(len(self.ax.lines)):
+        #    del(self.ax.lines[-1])
 

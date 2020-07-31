@@ -154,20 +154,21 @@ async def main():
             left = 0
             right = 1 # ?
             changeMotors(front, left, right) # stop and turn 90 degree right
-            v = (0,0,0) # TODO the velocity
-            carPos.updatePostition(lastStop, v)
+            carPos.updatePostition(lastStop)
             obstacles.append(carPos.getWallPoint())
         elif distanceLeft < 5: #no wall left of car
             front = 0
             left = 1
             right = 0
             changeMotors(front, left, right) # stop and turn 90 degree left
-            v = (0,0,0) # TODO the velocity
-            carPos.updatePostition(lastStop, v)
+            carPos.updatePostition(lastStop)
             obstacles.append(carPos.getWallPoint())
 
-    # visual.update_plot(obstacles)
     gpio.cleanup()
+    with open("mapPoints.txt", "w") as f:
+        for p in obstacles:
+            f.write(p + "\n")
+    # visual.update_plot(obstacles)
 
 
 asyncio.run(main())

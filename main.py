@@ -188,15 +188,13 @@ async def carmain():
     endCondition = True
     carPos = CarPosition(0, 0, 0)
     obstacles = []  # the map, build from points
-    lastStop = 0  # seconds since last time the direction was changed
+    lastStop = time.time()  # seconds since last time the direction was changed
     sensorFront = DistanceSensor(trig, echo, 3)
     sensorLeft = DistanceSensor(trig2, echo2, 3)
         
    # visual = SlamPlot()
     with open("mapPoints.txt", "w") as f:
         while endCondition:
-            lastStop = time.time()  # seconds since last time the direction was changed
-
             if distanceEnable:
                 first_awaitable = asyncio.create_task(sensorFront.getDistance())
                 second_awaitable = asyncio.create_task(sensorLeft.getDistance())
@@ -212,25 +210,27 @@ async def carmain():
             print("=============")
 
             if distanceFront < stopDistanceFront:  # wall in front of car
-                sideStepRight(1)
+                print("Strop Right")
 
-                v = (0, 0, 0)  # TODO the velocity
-                carPos.updatePostition(lastStop)
+                carPos.updatePostition(time.time() - lastStop)
+                sideStepRight(1)
                 obstacles.append(carPos.getWallPoint())
                 f.write(str(obstacles[-1]) + "\n")
+                f.write(str(carPos.getPosition()) + "\n\n")
+                lastStop = time.time()
 
             elif distanceLeft < stopDistanceLeft:  # no wall left of car
                 print("Stop Left")
 
+                carPos.updatePostition(time.time() - lastStop)
                 sideStepRight(1)
-
-                v = (0, 0, 0)  # TODO the velocity
-                carPos.updatePostition(lastStop)
                 obstacles.append(carPos.getWallPoint())
                 f.write(str(obstacles[-1]) + "\n")
+                f.write(str(carPos.getPosition()) + "\n\n")
+                lastStop = time.time()
 
             if distanceLeft > stopDistanceLeft and distanceFront > stopDistanceFront:
-                print("Start")
+                #print("Start")
                 turnStraight()
 
 

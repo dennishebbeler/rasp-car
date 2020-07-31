@@ -217,34 +217,26 @@ async def carmain():
 
             f.write(obstacles[-1] + "\n")
         if distanceFront < stopDistanceFront:  # wall in front of car
-            sideStepRight(2)
+            sideStepRight(1)
 
             v = (0, 0, 0)  # TODO the velocity
-            carPos.updatePostition(lastStop, v)
+            carPos.updatePostition(lastStop)
             obstacles.append(carPos.getWallPoint())
             f.write(obstacles[-1] + "\n")
 
-        if distanceLeft < stopDistanceLeft:  # no wall left of car
+        elif distanceLeft < stopDistanceLeft:  # no wall left of car
             print("Stop Left")
 
-            sideStepRight(2)
+            sideStepRight(1)
 
             v = (0, 0, 0)  # TODO the velocity
-            carPos.updatePostition(lastStop, v)
+            carPos.updatePostition(lastStop)
             obstacles.append(carPos.getWallPoint())
             f.write(obstacles[-1] + "\n")
 
         if distanceLeft > stopDistanceLeft and distanceFront > stopDistanceFront:
             turnStraight()
 
-        # front = 0
-        # left = 0
-        # right = 0
-        # changeMotors(front, left, right) # stop and turn 90 degree left
-        v = (0, 0, 0)  # TODO the velocity
-        carPos.updatePostition(lastStop, v)
-        obstacles.append(carPos.getWallPoint())
-        f.write(obstacles[-1] + "\n")
 
 # visual.update_plot(obstacles)
 gpio.cleanup()

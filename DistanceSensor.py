@@ -1,5 +1,6 @@
 import RPi.GPIO as gpio
 import time
+from multiprocessing import Value
 
 class DistanceSensor:
 
@@ -14,8 +15,13 @@ class DistanceSensor:
         self.trig = trig
         self.echo = echo
         self.sensorReadings = sensorReadings
+        self.lastDistance = Value("d", 10.0)
+    
+    def run(self):
+        while True:
+            self.lastDistance = self.getDistance()
 
-    async def getDistance(self):
+    def getDistance(self):
         
         readings = [] # take more than 1 reading since sometimes 1 reading can be wrong
         for i in range(self.sensorReadings):

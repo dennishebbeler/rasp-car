@@ -39,7 +39,7 @@ class SlamPlot:
             obstacles_y.append(o[1])
 
 
-        self.ax.plot(obstacles_x, obstacles_y, "k.", label="Messungen")  # plot obstacles
+        self.ax.plot(obstacles_x, obstacles_y, "k", label="Messungen")  # plot obstacles
         # weightDist.plot(weightD, np.ones(len(weightD)), "--y.", label="weight distrubution")
         # _,_,c = weightDist.hist( weightD, bins=np.arange(0,1.4,0.05), color="b", density=True, histtype="step", stacked=True, label="weight distrubution")
 

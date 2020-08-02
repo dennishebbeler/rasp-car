@@ -9,6 +9,9 @@ class CarPosition:
         self.x = x
         self.y = y
         self.theta = theta
+
+    def getPosition(self):
+        return (self.x, self.y, self.theta)
     
     def getVelocity(self, timeDriven, speed):
         v = (0,0,0)
@@ -29,7 +32,7 @@ class CarPosition:
         v = self.getVelocity(timeDriven, speed)
         r_x = v[0] * timeDriven
         r_y = v[1] * timeDriven
-        r_theta = v[2] * timeDriven
+        r_theta = 0.5 * np.pi
 
         self.theta = self.normalize_angle(self.theta + r_theta)
         self.x += r_x * np.cos(self.theta) - r_y * np.sin(self.theta)
@@ -45,9 +48,10 @@ class CarPosition:
 
     def getWallPoint(self):
         # placeholder, assumes the wall point is in the local coordinates (-3,-3)
-        local = (-3,-3)
-        global_x = local[0] * np.cos(self.theta) - local[1] * np.sin(self.theta) + self.x
-        global_y = local[0] * np.sin(self.theta) + local[1] * np.cos(self.theta) + self.y
+        local = (-3, -3)
+        global_x = (local[0] - self.x) * np.cos(self.theta) - (local[1] - self.y) * np.sin(self.theta)
+        global_y = (local[0] - self.x) * np.sin(self.theta) + (local[1] - self.y) * np.cos(self.theta)
+
 
         return (global_x, global_y)
         

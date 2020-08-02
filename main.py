@@ -183,9 +183,12 @@ async def carmain():
     endCondition = True
     carPos = CarPosition(0, 0, 0)
     obstacles = []  # the map, build from points
-    lastStop = 0  # seconds since last time the direction was changed
+
     sensorDeathLeft = 145
     sensorDeathFront = 145
+
+    lastStop = time.time()  # seconds since last time the direction was changed
+
     sensorFront = DistanceSensor(trig, echo, 3)
     sensorLeft = DistanceSensor(trig2, echo2, 3)
     
@@ -207,8 +210,7 @@ async def carmain():
     # visual = SlamPlot()
     with open("mapPoints.txt", "w") as f:
         while endCondition:
-            
-            
+
             beschleunigungX = gyroskop.getBeschleunigungX(False)
             beschleunigungY = gyroskop.getBeschleunigungY(False)
             
@@ -224,14 +226,11 @@ async def carmain():
             vylast = vy
             vy  = beschleunigungY*(currenttime - lastTime) +vy
             print("Geschwindigkeit Y: "+str(vy*3.6)+"Km/h")
-
-                  
+      
             bg = math.sqrt(beschleunigungX**2 + beschleunigungY**2 + 2*beschleunigungX*beschleunigungY)
             vglast = vg
             vg = bg*(currenttime - lastTime)+vglast
             print("Geschwindigkeit Gesamt: "+str(vg*3.6)+"Km/h")
-                           
-            lastStop = time.time()  # seconds since last time the direction was changed
 
             if distanceEnable:
                 first_awaitable = asyncio.create_task(sensorFront.getDistance())
@@ -247,7 +246,6 @@ async def carmain():
             print("Front: ", distanceFront)
             print("Left: ", distanceLeft)
             print("=============")
-            
             
             if distanceFront > sensorDeathFront:
                 turnReverse()
@@ -298,6 +296,29 @@ async def carmain():
                 
             elif distanceLeft > stopDistanceLeft and distanceFront > stopDistanceFront and distanceFront < sensorDeathFront:
                 print("=No Obstacles, Forward=")
+
+            if distanceFront < stopDistanceFront:  # wall in front of car
+                print("Strop Right")
+
+                carPos.updatePostition(time.time() - lastStop)
+                sideStepRight(1)
+                obstacles.append(carPos.getWallPoint())
+                f.write(str(obstacles[-1]) + "\n")
+                f.write(str(carPos.getPosition()) + "\n\n")
+                lastStop = time.time()
+
+            elif distanceLeft < stopDistanceLeft:  # no wall left of car
+                print("Stop Left")
+
+                carPos.updatePostition(time.time() - lastStop)
+                sideStepRight(1)
+                obstacles.append(carPos.getWallPoint())
+                f.write(str(obstacles[-1]) + "\n")
+                f.write(str(carPos.getPosition()) + "\n\n")
+                lastStop = time.time()
+
+            if distanceLeft > stopDistanceLeft and distanceFront > stopDistanceFront:
+                #print("Start")
                 turnStraight()
 
             distanceLastFront = distanceFront

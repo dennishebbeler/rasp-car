@@ -25,7 +25,7 @@ class CarPosition:
 
     def updatePostition(self, timeDriven):
         # velocity of the car * the time driven
-        speed = 10
+        speed = 1.2
         v = self.getVelocity(timeDriven, speed)
         r_x = v[0] * timeDriven
         r_y = v[1] * timeDriven
@@ -46,8 +46,8 @@ class CarPosition:
     def getWallPoint(self):
         # placeholder, assumes the wall point is in the local coordinates (-3,-3)
         local = (-3,-3)
-        global_x = local[0] * np.cos(self.theta) - local[1] * np.sin(self.theta)
-        global_y = local[0] * np.sin(self.theta) + local[1] * np.cos(self.theta)
+        global_x = local[0] * np.cos(self.theta) - local[1] * np.sin(self.theta) + self.x
+        global_y = local[0] * np.sin(self.theta) + local[1] * np.cos(self.theta) + self.y
 
         return (global_x, global_y)
         

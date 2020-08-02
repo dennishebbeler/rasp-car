@@ -2,6 +2,9 @@ import RPi.GPIO as gpio
 # import lirc
 import time
 import asyncio
+import atexit
+import math
+
 from MotorShield import PiMotor
 # from lirc import LircdConnection
 import numpy as np
@@ -9,19 +12,20 @@ import numpy as np
 from DistanceSensor import DistanceSensor
 from CarPosition import CarPosition
 from mapVisualization import SlamPlot
+from Gyroskop import Gyroskop
 
 gpio.setmode(gpio.BOARD)
 
-trig = 3
+trig = 13
 echo = 4
-trigBoard = 5
+trigBoard = 33
 echoBoard = 7
 trig = trigBoard
 echo = echoBoard
 
-trig2 = 2
+trig2 = 19
 echo2 = 20
-trigBoard2 = 3
+trigBoard2 = 35
 echoBoard2 = 38
 trig2 = trigBoard2
 echo2 = echoBoard2
@@ -87,7 +91,6 @@ def changeMotors(front, left, right):
 
 
 def turnStraight():
-    print("straight")
     mFL.forward(100)
     mFR.forward(100)
     mRL.forward(100)
@@ -95,7 +98,6 @@ def turnStraight():
 
 
 def turnLeft():
-    print("left")
     mFL.forward(100)
     mFR.forward(0)
     mRL.forward(100)
@@ -103,7 +105,6 @@ def turnLeft():
 
 
 def turnLeftBack():
-    print("left")
     mFL.forward(0)
     mFR.forward(0)
     mRL.forward(0)
@@ -116,7 +117,6 @@ def turnLeftBack():
 
 
 def turnRightBack():
-    print("right")
     mFL.forward(0)
     mFR.forward(0)
     mRL.forward(0)
@@ -129,7 +129,6 @@ def turnRightBack():
 
 
 def turnRight():
-    print("right")
     mFL.forward(0)
     mFR.forward(100)
     mRL.forward(0)
@@ -137,17 +136,15 @@ def turnRight():
 
 
 def turnReverse():
-    print("reverse")
     mFL.reverse(100)
     mFR.reverse(100)
     mRL.reverse(100)
     mRR.reverse(100)
 
 
-def sideStepLeft(timeWait):
+def sideStepLeft(timeWait = 0.5):
     stopMotors()
     time.sleep(1)
-    print("Stop Front")
     turnRightBack()
     time.sleep(timeWait)
 
@@ -157,10 +154,9 @@ def sideStepLeft(timeWait):
     time.sleep(timeWait)
 
 
-def sideStepRight(timeWait):
+def sideStepRight(timeWait = 0.5):
     stopMotors()
     time.sleep(1)
-    print("Stop Front")
     turnLeftBack()
     time.sleep(timeWait)
 
@@ -168,7 +164,6 @@ def sideStepRight(timeWait):
     time.sleep(1)
     turnRight()
     time.sleep(timeWait)
-
 
 def exit():
     stopMotors()
@@ -182,19 +177,60 @@ async def carmain():
     right = 0
     distanceEnable = True
 
-    stopDistanceFront = 10
-    stopDistanceLeft = 10
+    stopDistanceFront = 15
+    stopDistanceLeft = 15
 
     endCondition = True
     carPos = CarPosition(0, 0, 0)
     obstacles = []  # the map, build from points
     lastStop = 0  # seconds since last time the direction was changed
+    sensorDeathLeft = 145
+    sensorDeathFront = 145
     sensorFront = DistanceSensor(trig, echo, 3)
     sensorLeft = DistanceSensor(trig2, echo2, 3)
-        
-   # visual = SlamPlot()
+    
+    gyroskop = Gyroskop()
+   
+    vg = 0
+    vglast = 0
+    vxlast = 0
+    vx = 0
+    
+    vylast = 0
+    vy = 0 
+    lasttime = time.time()
+    currenttime = time.time()
+    
+    distanceLastFront = 180
+    distanceLastLeft = 180
+    
+    # visual = SlamPlot()
     with open("mapPoints.txt", "w") as f:
         while endCondition:
+            
+            
+            beschleunigungX = gyroskop.getBeschleunigungX(False)
+            beschleunigungY = gyroskop.getBeschleunigungY(False)
+            
+            lastTime = currenttime
+            currenttime = time.time()
+            print("BeschleunigungX: "+ str(beschleunigungX))
+            print("Sekunden"+str(currenttime -lastTime))
+            
+            vxlast = vx
+            vx  = beschleunigungX*(currenttime - lastTime) + vx
+            print("Geschwindigkeit X: "+str(vx*3.6)+"Km/h")
+            
+            vylast = vy
+            vy  = beschleunigungY*(currenttime - lastTime) +vy
+            print("Geschwindigkeit Y: "+str(vy*3.6)+"Km/h")
+
+                  
+            bg = math.sqrt(beschleunigungX**2 + beschleunigungY**2 + 2*beschleunigungX*beschleunigungY)
+            vglast = vg
+            vg = bg*(currenttime - lastTime)+vglast
+            print("Geschwindigkeit Gesamt: "+str(vg*3.6)+"Km/h")
+                           
             lastStop = time.time()  # seconds since last time the direction was changed
 
             if distanceEnable:
@@ -204,35 +240,68 @@ async def carmain():
             if distanceEnable:
                 distanceFront = await first_awaitable
                 distanceLeft = await second_awaitable
+                
 
             print("=============")
             print("Messung")
             print("Front: ", distanceFront)
             print("Left: ", distanceLeft)
             print("=============")
-
-            if distanceFront < stopDistanceFront:  # wall in front of car
-                sideStepRight(1)
-
+            
+            
+            if distanceFront > sensorDeathFront:
+                turnReverse()
+                
+            if distanceLeft > sensorDeathLeft:
+                turnRight()
+                
+            elif distanceEnable and distanceLastFront > distanceFront and distanceFront < stopDistanceFront:  # wall in front of car
+                
+                if distanceLastLeft <= distanceLeft and distanceLeft < 90 and distanceLeft > stopDistanceLeft:
+                    sideStepLeft()
+                else:
+                    sideStepRight()
+                    
+                vx = 0
+                vy = 0
+                vg = 0      
                 v = (0, 0, 0)  # TODO the velocity
                 carPos.updatePostition(lastStop)
                 obstacles.append(carPos.getWallPoint())
                 f.write(str(obstacles[-1]) + "\n")
-
-            elif distanceLeft < stopDistanceLeft:  # no wall left of car
+                f.write(str(carPos.x)+"_"+str(carPos.y)+"_"+str(carPos.theta) + "\n")
+            elif distanceEnable and distanceLastLeft > distanceLeft and distanceLeft < stopDistanceLeft:  # no wall left of car
                 print("Stop Left")
 
-                sideStepRight(1)
+                sideStepRight()
 
+                vx = 0
+                vy = 0
+                vg = 0
                 v = (0, 0, 0)  # TODO the velocity
                 carPos.updatePostition(lastStop)
                 obstacles.append(carPos.getWallPoint())
                 f.write(str(obstacles[-1]) + "\n")
+                f.write(str(carPos.x)+"_"+str(carPos.y)+"_"+str(carPos.theta) + "\n")
+            
+            elif distanceEnable and distanceLastLeft > distanceLeft and distanceLeft < stopDistanceLeft * 2 and distanceFront < stopDistanceFront * 2:
+                print("=Stop Front and Left Distance =")
 
-            if distanceLeft > stopDistanceLeft and distanceFront > stopDistanceFront:
-                print("Start")
+                sideStepRight()
+                vx = 0
+                vy = 0
+                vg = 0
+                carPos.updatePostition(lastStop)
+                obstacles.append(carPos.getWallPoint())
+                f.write(str(obstacles[-1]) + "\n")
+                f.write(str(carPos.x)+"_"+str(carPos.y)+"_"+str(carPos.theta) + "\n")
+                
+            elif distanceLeft > stopDistanceLeft and distanceFront > stopDistanceFront and distanceFront < sensorDeathFront:
+                print("=No Obstacles, Forward=")
                 turnStraight()
 
+            distanceLastFront = distanceFront
+            distanceLastLeft = distanceLeft
 
 # visual.update_plot(obstacles)
 
@@ -241,6 +310,8 @@ if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     # Side note: Apparently, async() will be deprecated in 3.4.4.
     # See: https://docs.python.org/3.4/library/asyncio-task.html#asynio.async
+    
+    atexit.register(exit)
 
     try:
         tasks = asyncio.gather(
@@ -248,15 +319,11 @@ if __name__ == '__main__':
         )
         loop.run_until_complete(tasks)
     except KeyboardInterrupt as e:
-        exit()
-
         print("Caught keyboard interrupt. Canceling tasks...")
-        tasks.cancel()
-        loop.run_forever()
-        tasks.exception()
     finally:
         exit()
-        loop.close()
+        print("System End. Canceling Task. Stopping Motors. Cleaning GPIO")
+
 
 
 

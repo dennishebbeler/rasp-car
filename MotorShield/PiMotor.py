@@ -57,7 +57,6 @@ class Motor:
         speed = Duty Cycle Percentage from 0 to 100.
         0 - stop and 100 - maximum speed
         '''    
-        print("Forward")
         if self.testMode:
             self.arrow.on()
         else:
@@ -72,7 +71,6 @@ class Motor:
         speed = Duty Cycle Percentage from 0 to 100.
         0 - stop and 100 - maximum speed
      '''
-        print("Reverse")
         if self.testMode:
             self.arrow.off()
         else:
@@ -83,9 +81,7 @@ class Motor:
     def stop(self):
         ''' Stops power to the motor,
      '''
-        print("Stop")
         self.PWM.ChangeDutyCycle(0)
-        print(self.pins['f'])
         GPIO.output(self.pins['f'],GPIO.LOW)
         GPIO.output(self.pins['r'],GPIO.LOW)
 
@@ -106,7 +102,6 @@ class LinkedMotors:
     def __init__(self, *motors):
         self.motor = []
         for i in motors:
-            print(i.pins)
             self.motor.append(i)
 
     def forward(self,speed):
@@ -211,7 +206,6 @@ class Stepper:
     def stop(self):
         ''' Stops power to the motor,
      '''
-        print("Stop Stepper Motor")
         GPIO.output(self.config['c1'],GPIO.LOW)
         GPIO.output(self.config['c2'],GPIO.LOW)
         GPIO.output(self.config['c3'],GPIO.LOW)

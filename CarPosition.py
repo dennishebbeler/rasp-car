@@ -12,9 +12,6 @@ class CarPosition:
 
     def getPosition(self):
         return (self.x, self.y, self.theta)
-    
-    def getPosition(self):
-        return (self.x, self.y, self.theta)
 
     def rotate(self, x, y, theta):
         r_x = x * np.cos(theta) - y * np.sin(theta)
@@ -39,7 +36,7 @@ class CarPosition:
 
     def getWallPoint(self):
         # placeholder, assumes the wall point is in the local coordinates (-3,-3)
-        local = (-3, -3)
+        local = (3, -3)
         global_x, global_y = self.rotate(local[0] - self.x, local[1] - self.y, self.theta) # change local to global coordinates
 
 

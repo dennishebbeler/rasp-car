@@ -21,7 +21,7 @@ class DistanceSensor:
         while True:
             self.lastDistance = self.getDistance()
 
-    def getDistance(self):
+    async def getDistance(self):
         
         readings = [] # take more than 1 reading since sometimes 1 reading can be wrong
         for i in range(self.sensorReadings):
@@ -48,5 +48,7 @@ class DistanceSensor:
                     break
             
             readings.append(stopSensor - startSensor)
+            
+            
 
         return sorted(readings)[round(self.sensorReadings/2)] * 17160 # cm 34320/2=17160, sorted list of all readings, take middle one

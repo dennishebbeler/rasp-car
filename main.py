@@ -250,9 +250,6 @@ async def carmain():
             if distanceFront > sensorDeathFront:
                 turnReverse()
                 
-            if distanceLeft > sensorDeathLeft:
-                turnRight()
-                
             elif distanceEnable and distanceLastFront > distanceFront and distanceFront < stopDistanceFront:  # wall in front of car
                 
                 if distanceLastLeft <= distanceLeft and distanceLeft < 90 and distanceLeft > stopDistanceLeft:
@@ -268,6 +265,7 @@ async def carmain():
                 obstacles.append(carPos.getWallPoint())
                 f.write(str(obstacles[-1]) + "\n")
                 f.write(str(carPos.x)+"_"+str(carPos.y)+"_"+str(carPos.theta) + "\n")
+
             elif distanceEnable and distanceLastLeft > distanceLeft and distanceLeft < stopDistanceLeft:  # no wall left of car
                 print("Stop Left")
 
@@ -296,29 +294,6 @@ async def carmain():
                 
             elif distanceLeft > stopDistanceLeft and distanceFront > stopDistanceFront and distanceFront < sensorDeathFront:
                 print("=No Obstacles, Forward=")
-
-            if distanceFront < stopDistanceFront:  # wall in front of car
-                print("Strop Right")
-
-                carPos.updatePostition(time.time() - lastStop)
-                sideStepRight(1)
-                obstacles.append(carPos.getWallPoint())
-                f.write(str(obstacles[-1]) + "\n")
-                f.write(str(carPos.getPosition()) + "\n\n")
-                lastStop = time.time()
-
-            elif distanceLeft < stopDistanceLeft:  # no wall left of car
-                print("Stop Left")
-
-                carPos.updatePostition(time.time() - lastStop)
-                sideStepRight(1)
-                obstacles.append(carPos.getWallPoint())
-                f.write(str(obstacles[-1]) + "\n")
-                f.write(str(carPos.getPosition()) + "\n\n")
-                lastStop = time.time()
-
-            if distanceLeft > stopDistanceLeft and distanceFront > stopDistanceFront:
-                #print("Start")
                 turnStraight()
 
             distanceLastFront = distanceFront

@@ -260,13 +260,13 @@ async def carmain():
                 vg = 0      
                 #v = (0, 0, 0)  # TODO the velocity
 
-                obstacles.append(carPos.getWallPoint())
+                obstacles.append(carPos.wallPoint)
                 f.write(str(obstacles[-1]) + "\n")
                 lastStop = time.time()
 
             elif distanceEnable and distanceLastLeft > distanceLeft and distanceLeft < stopDistanceLeft:  # no wall left of car
                 carPos.updatePosition(time.time() - lastStop, 0.5*np.pi)
-                obstacles.append(carPos.getWallPoint())
+                obstacles.append(carPos.wallPoint)
                 f.write(str(obstacles[-1]) + "\n")
                 sideStepRight()
 
@@ -282,7 +282,7 @@ async def carmain():
                 print("=Stop Front and Left Distance =")
                 
                 carPos.updatePosition(time.time() - lastStop, 0.5*np.pi)
-                obstacles.append(carPos.getWallPoint())
+                obstacles.append(carPos.wallPoint)
                 f.write(str(obstacles[-1]) + "\n")
                 sideStepRight()
                 vx = 0

@@ -9,6 +9,7 @@ class CarPosition:
         self.x = x
         self.y = y
         self.theta = theta
+        self.wallPoint = (0,0)
 
     def getPosition(self):
         return (self.x, self.y, self.theta)
@@ -24,6 +25,7 @@ class CarPosition:
 
         self.x += speedVector[0] * timeDriven
         self.y += speedVector[1] * timeDriven
+        self.wallPoint = self.getWallPoint()
         self.theta = self.normalize_angle(self.theta + rotationChange)
 
     def normalize_angle(self, angle):
@@ -36,8 +38,10 @@ class CarPosition:
 
     def getWallPoint(self):
         # placeholder, assumes the wall point is in the local coordinates (-3,-3)
-        local = (3, -3)
-        global_x, global_y = self.rotate(local[0] - self.x, local[1] - self.y, self.theta) # change local to global coordinates
+        local = (-3, 3)
+        tx, ty = self.rotate(local[0], local[1], -self.theta)
+        global_x = self.x + tx# change local to global coordinates
+        global_y = self.y + ty
 
 
         return (global_x, global_y)

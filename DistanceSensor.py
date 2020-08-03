@@ -27,24 +27,23 @@ class DistanceSensor:
         for i in range(self.sensorReadings):
             timeWaited = time.time()
 
-            # pre set in case something goes wrong
-            startSensor = time.time()
-            stopSensor = time.time()
-
             gpio.output(self.trig, True)
             time.sleep(0.0001)
             gpio.output(self.trig, False)
 
+            startSensor = time.time()
             # input(self.echo) is 1 if signal was send but not received
             while gpio.input(self.echo) == 0:
                 startSensor = time.time()
-                if startSensor > timeWaited + 0.2: #wait at most 0.2 seconds
+                if startSensor > timeWaited + 0.1: #wait at most 0.1 seconds
+                    time.sleep(0.001) # add time so distance is around 17 cm
                     break
 
+            stopSensor = time.time()
             # as soon as the signal is received input(self.echo) becomes 0
             while gpio.input(self.echo) == 1:
                 stopSensor = time.time()
-                if stopSensor > startSensor + 0.01: #wait at most 0.01 seconds, ca 170 cm
+                if stopSensor > startSensor + 0.002: #wait at most 0.01 seconds, ca 34 cm
                     break
             
             readings.append(stopSensor - startSensor)

@@ -13,30 +13,21 @@ class CarPosition:
     def getPosition(self):
         return (self.x, self.y, self.theta)
     
-    def getVelocity(self, timeDriven, speed):
-        v = (0,0,0)
-        distance = timeDriven * speed
-        if self.theta == 0:
-            v = (0, distance, 0)
-        elif self.theta == 0.5 * np.pi:
-            v = (distance, 0, self.theta)
-        elif self.theta == np.pi:
-            v = (0, -distance, self.theta)
-        elif self.theta == 1.5 * np.pi:
-            v = (-distance, 0, self.theta)
-        return v
+    def getPosition(self):
+        return (self.x, self.y, self.theta)
 
-    def updatePostition(self, timeDriven):
-        # velocity of the car * the time driven
-        speed = 1.2
-        v = self.getVelocity(timeDriven, speed)
-        r_x = v[0] * timeDriven
-        r_y = v[1] * timeDriven
-        r_theta = 0.5 * np.pi
+    def rotate(self, x, y, theta):
+        r_x = x * np.cos(theta) - y * np.sin(theta)
+        r_y = x * np.sin(theta) + y * np.cos(theta)
+        return (r_x, r_y)
+        
+    def updatePosition(self, timeDriven, rotationChange):
+        speed = 10
+        speedVector = self.rotate( 0, speed, -self.theta) # align it to the orientation of the car (global to local coordinates)
 
-        self.theta = self.normalize_angle(self.theta + r_theta)
-        self.x += r_x * np.cos(self.theta) - r_y * np.sin(self.theta)
-        self.y += r_x * np.sin(self.theta) + r_y * np.cos(self.theta)
+        self.x += speedVector[0] * timeDriven
+        self.y += speedVector[1] * timeDriven
+        self.theta = self.normalize_angle(self.theta + rotationChange)
 
     def normalize_angle(self, angle):
         # normalize the angle so its between 0 and 2 pi
@@ -49,12 +40,10 @@ class CarPosition:
     def getWallPoint(self):
         # placeholder, assumes the wall point is in the local coordinates (-3,-3)
         local = (-3, -3)
-        global_x = (local[0] - self.x) * np.cos(self.theta) - (local[1] - self.y) * np.sin(self.theta)
-        global_y = (local[0] - self.x) * np.sin(self.theta) + (local[1] - self.y) * np.cos(self.theta)
+        global_x, global_y = self.rotate(local[0] - self.x, local[1] - self.y, self.theta) # change local to global coordinates
 
 
         return (global_x, global_y)
         
 
-         
 

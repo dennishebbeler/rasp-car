@@ -8,6 +8,7 @@ import math
 from MotorShield import PiMotor
 # from lirc import LircdConnection
 import numpy as np
+from multiprocessing import Process
 
 from DistanceSensor import DistanceSensor
 from CarPosition import CarPosition
@@ -251,34 +252,34 @@ async def carmain():
                 turnReverse()
                 
             elif distanceEnable and distanceLastFront > distanceFront and distanceFront < stopDistanceFront:  # wall in front of car
-                
                 if distanceLastLeft <= distanceLeft and distanceLeft < 90 and distanceLeft > stopDistanceLeft:
                     sideStepLeft()
+                    carPos.updatePosition(time.time() - lastStop, -0.5 * np.pi)
                 else:
                     sideStepRight()
+                    carPos.updatePosition(time.time() - lastStop, 0.5 * np.pi)
                     
                 vx = 0
                 vy = 0
                 vg = 0      
                 v = (0, 0, 0)  # TODO the velocity
-                carPos.updatePostition(lastStop)
+
                 obstacles.append(carPos.getWallPoint())
                 f.write(str(obstacles[-1]) + "\n")
                 f.write(str(carPos.x)+"_"+str(carPos.y)+"_"+str(carPos.theta) + "\n")
+                lastStop = time.time()
 
             elif distanceEnable and distanceLastLeft > distanceLeft and distanceLeft < stopDistanceLeft:  # no wall left of car
-                print("Stop Left")
-
                 sideStepRight()
 
                 vx = 0
                 vy = 0
                 vg = 0
                 v = (0, 0, 0)  # TODO the velocity
-                carPos.updatePostition(lastStop)
+                carPos.updatePosition(time.time() - lastStop, 0.5*np.pi)
                 obstacles.append(carPos.getWallPoint())
                 f.write(str(obstacles[-1]) + "\n")
-                f.write(str(carPos.x)+"_"+str(carPos.y)+"_"+str(carPos.theta) + "\n")
+                lastStop = time.time()
             
             elif distanceEnable and distanceLastLeft > distanceLeft and distanceLeft < stopDistanceLeft * 2 and distanceFront < stopDistanceFront * 2:
                 print("=Stop Front and Left Distance =")
@@ -287,14 +288,16 @@ async def carmain():
                 vx = 0
                 vy = 0
                 vg = 0
-                carPos.updatePostition(lastStop)
+
+                carPos.updatePosition(time.time() - lastStop, 0.5*np.pi)
                 obstacles.append(carPos.getWallPoint())
                 f.write(str(obstacles[-1]) + "\n")
-                f.write(str(carPos.x)+"_"+str(carPos.y)+"_"+str(carPos.theta) + "\n")
+                lastStop = time.time()
                 
             elif distanceLeft > stopDistanceLeft and distanceFront > stopDistanceFront and distanceFront < sensorDeathFront:
                 print("=No Obstacles, Forward=")
                 turnStraight()
+
 
             distanceLastFront = distanceFront
             distanceLastLeft = distanceLeft
